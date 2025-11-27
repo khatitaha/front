@@ -1,0 +1,23 @@
+meta {
+  name: translate
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://127.0.0.1:8001/ai/translate/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "text": "Hello world, how are you?"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

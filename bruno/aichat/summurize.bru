@@ -1,0 +1,23 @@
+meta {
+  name: summurize
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://127.0.0.1:8001/ai/summarize/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "text": "The quick brown fox jumps over the lazy dog. This sentence is often used for typing practice and font testing. this sis asas just a long talk has nothing to do here so should be summurized bu at the end of this very very chucnkyng long text i just wanna say sky is clear blue "
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

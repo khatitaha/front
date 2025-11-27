@@ -1,0 +1,19 @@
+meta {
+  name: findStudUniv
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:8080/student/findStudUniv?univName=west
+  body: none
+  auth: inherit
+}
+
+params:query {
+  univName: west
+}
+
+settings {
+  encodeUrl: true
+}
