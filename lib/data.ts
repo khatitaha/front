@@ -1,7 +1,6 @@
 export interface University {
   id: number;
   name: string;
-  location: string;
 }
 
 // Updated Student interface to match GraphQL schema
@@ -9,7 +8,7 @@ export interface Student {
   id: number;
   name: string; // Combined first and last name
   address: string;
-  university_id: number;
+  university: University;
 }
 
 export interface Course {
@@ -26,17 +25,17 @@ export interface StudentCourse {
 }
 
 export const universities: University[] = [
-  { id: 1, name: "Abdelhamid Mehri University", location: "Constantine, Algeria" },
-  { id: 2, name: "University of Algiers 1", location: "Algiers, Algeria" },
+  { id: 1, name: "Abdelhamid Mehri University"},
+  { id: 2, name: "University of Algiers 1" },
 ];
 
 // Updated students mock data
 export const students: Student[] = [
-  { id: 101, name: "Amina Benali", address: "123 Rue de la Liberte, Constantine", university_id: 1 },
-  { id: 102, name: "Karim Ziani", address: "456 Avenue de l'Independance, Constantine", university_id: 1 },
-  { id: 103, name: "Fatima Salah", address: "789 Boulevard des Martyrs, Algiers", university_id: 2 },
-  { id: 104, name: "Mehdi Lounis", address: "101 Rue Didouche Mourad, Constantine", university_id: 1 },
-  { id: 105, name: "Lina Boudiaf", address: "212 Rue des Palmiers, Algiers", university_id: 2 },
+  { id: 101, name: "Amina Benali", address: "123 Rue de la Liberte, Constantine", university: { id: 1, name: "Abdelhamid Mehri University" } },
+  { id: 102, name: "Karim Ziani", address: "456 Avenue de l'Independance, Constantine", university: { id: 1, name: "Abdelhamid Mehri University" } },
+  { id: 103, name: "Fatima Salah", address: "789 Boulevard des Martyrs, Algiers", university: { id: 2, name: "University of Algiers 1" } },
+  { id: 104, name: "Mehdi Lounis", address: "101 Rue Didouche Mourad, Constantine", university: { id: 1, name: "Abdelhamid Mehri University" } },
+  { id: 105, name: "Lina Boudiaf", address: "212 Rue des Palmiers, Algiers", university: { id: 2, name: "University of Algiers 1" } },
 ];
 
 export const courses: Course[] = [

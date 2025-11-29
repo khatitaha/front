@@ -1,9 +1,0 @@
-{
-  "version": "1",
-  "name": "courseFN",
-  "type": "collection",
-  "ignore": [
-    "node_modules",
-    ".git"
-  ]
-}

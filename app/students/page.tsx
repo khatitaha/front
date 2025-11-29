@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getStudents, getUniversityById } from '../../lib/api';
+import { getStudents, getUniversities } from '../../lib/api';
 import type { Student } from '../../lib/data';
 import StudentForm from '../../components/StudentForm';
 
@@ -12,6 +12,7 @@ const StudentsPage = () => {
   const [universitiesMap, setUniversitiesMap] = useState<Map<number, string>>(new Map());
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // State for modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,19 +20,25 @@ const StudentsPage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const studentsData = await getStudents();
-      setAllStudents(studentsData);
-      setDisplayStudents(studentsData);
-      
-      const uniMap = new Map<number, string>();
-      for (const student of studentsData) {
-        if (!uniMap.has(student.university_id)) {
-          const uni = await getUniversityById(student.university_id);
-          uniMap.set(student.university_id, uni?.name || 'Unknown');
+      try {
+        const [studentsData, universitiesData] = await Promise.all([
+          getStudents(),
+          getUniversities(),
+        ]);
+
+        setAllStudents(studentsData);
+        setDisplayStudents(studentsData);
+        
+        const uniMap = new Map<number, string>();
+        for (const uni of universitiesData) {
+          uniMap.set(uni.id, uni.name);
         }
+        setUniversitiesMap(uniMap);
+      } catch (err) {
+        setError('Failed to load data. Please make sure the API gateway is running and properly configured.');
+      } finally {
+        setIsLoading(false);
       }
-      setUniversitiesMap(uniMap);
-      setIsLoading(false);
     };
     fetchData();
   }, []);
@@ -55,6 +62,7 @@ const StudentsPage = () => {
 
   const handleDelete = (studentId: number) => {
     if (confirm('Are you sure you want to delete this student?')) {
+      // Here you would typically call an API to delete the student
       setAllStudents(allStudents.filter(s => s.id !== studentId));
     }
   };
@@ -65,16 +73,23 @@ const StudentsPage = () => {
   };
 
   const handleSaveStudent = (student: Student) => {
+    // Here you would typically call an API to save the student
     if (editingStudent) {
       setAllStudents(allStudents.map(s => s.id === student.id ? student : s));
     } else {
-      setAllStudents([...allStudents, student]);
+      // For new students, you might need to assign a temporary ID or get one from the backend
+      const newStudent = { ...student, id: Date.now() };
+      setAllStudents([...allStudents, newStudent]);
     }
     handleCloseModal();
   };
 
   if (isLoading) {
     return <div>Loading students...</div>;
+  }
+  
+  if (error) {
+    return <div className="alert alert-danger">{error}</div>;
   }
 
   return (
@@ -118,7 +133,7 @@ const StudentsPage = () => {
                 <Link href={`/students/${student.id}`}>{student.name}</Link>
               </td>
               <td>{student.address}</td>
-              <td>{universitiesMap.get(student.university_id)}</td>
+              <td>{student.university.name || 'Unknown'}</td>
               <td>
                 <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => handleEdit(student)}>Edit</button>
                 <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(student.id)}>Delete</button>

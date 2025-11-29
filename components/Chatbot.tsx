@@ -2,29 +2,48 @@
 
 import { useState } from 'react';
 
+const BASE_URL = 'http://localhost:8086';
+
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{ author: 'user' | 'bot'; text: string }[]>([]);
   const [inputText, setInputText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const toggleChat = () => setIsOpen(!isOpen);
 
-  const handleSendMessage = (action: 'translate' | 'summarize') => {
-    if (inputText.trim() === '') return;
+  const handleSendMessage = async (action: 'translate' | 'summarize') => {
+    if (inputText.trim() === '' || isLoading) return;
 
     const userMessage = { author: 'user' as 'user', text: inputText };
-    let botMessageText = '';
-
-    if (action === 'translate') {
-      botMessageText = `[Mock Translation]: "${inputText}" has been translated.`;
-    } else {
-      botMessageText = `[Mock Summary]: Here is a summary of "${inputText}".`;
-    }
-    
-    const botMessage = { author: 'bot' as 'bot', text: botMessageText };
-
-    setMessages([...messages, userMessage, botMessage]);
+    setMessages(prev => [...prev, userMessage]);
     setInputText('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`${BASE_URL}/api/chatbot/${action}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: inputText }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get a response from the bot.');
+      }
+
+      const data = await response.json();
+      const botMessageText = data.summary || data.translated_text || 'Sorry, I could not process that.';
+      const botMessage = { author: 'bot' as 'bot', text: botMessageText };
+      setMessages(prev => [...prev, botMessage]);
+
+    } catch (error) {
+      const errorMessage = { author: 'bot' as 'bot', text: 'Sorry, something went wrong.' };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const styles = {
@@ -89,7 +108,8 @@ const Chatbot = () => {
               </div>
             </div>
           ))}
-           <div className="p-2 text-muted text-center" style={{display: messages.length === 0 ? 'block' : 'none'}}>
+          {isLoading && <div className="p-2 text-muted text-center">Thinking...</div>}
+           <div className="p-2 text-muted text-center" style={{display: messages.length === 0 && !isLoading ? 'block' : 'none'}}>
             Ask me to translate or summarize text!
           </div>
         </div>
@@ -102,11 +122,12 @@ const Chatbot = () => {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage('summarize')}
+              disabled={isLoading}
             />
           </div>
           <div className="d-flex justify-content-around mt-2">
-             <button className="btn btn-outline-primary btn-sm" onClick={() => handleSendMessage('translate')}>Translate</button>
-             <button className="btn btn-outline-primary btn-sm" onClick={() => handleSendMessage('summarize')}>Summarize</button>
+             <button className="btn btn-outline-primary btn-sm" onClick={() => handleSendMessage('translate')} disabled={isLoading}>Translate</button>
+             <button className="btn btn-outline-primary btn-sm" onClick={() => handleSendMessage('summarize')} disabled={isLoading}>Summarize</button>
           </div>
         </div>
       </div>
