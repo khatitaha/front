@@ -24,6 +24,11 @@ const Sidebar = () => {
           </Link>
         </li>
         <li>
+          <Link href="/courses/students" className="nav-link text-white">
+            Courses with Students
+          </Link>
+        </li>
+        <li>
           <Link href="/university" className="nav-link text-white">
             University
           </Link>
