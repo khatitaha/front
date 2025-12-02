@@ -25,7 +25,7 @@ export const getStudentById = async (id: number): Promise<Student | undefined> =
     // Return undefined or handle as per application's error handling strategy
     return undefined;
   }
-  const student = await response.json();
+  const student = await response.json().then((data: any) => data.student);
   console.log('Fetched student by ID:', student);
   return student;
 } ;
@@ -35,8 +35,13 @@ export const addStudent = async (student: Omit<Student, 'id'>): Promise<Student>
   const studentDataForApi = {
     name: student.name,
     address: student.address,
-    university_id: student.university.id,
+    university: {
+      id : student.university.id,
+    
+    }
   };
+
+  console.log('Adding student with data:', studentDataForApi);
 
   const response = await fetch(`${BASE_URL}/api/students/add`, {
     method: 'POST',
@@ -58,7 +63,7 @@ export const updateStudent = async (student: Student): Promise<Student> => {
     address: student.address,
     university_id: student.university.id,
   };
-
+console.log('Updating student with data:', student , studentDataForApi);
   const response = await fetch(`${BASE_URL}/api/students/update/${student.id}`, { // Assuming an update endpoint like this
     method: 'PUT',
     headers: {
@@ -75,7 +80,7 @@ export const updateStudent = async (student: Student): Promise<Student> => {
 
 export const deleteStudent = async (id: number): Promise<void> => {
   const response = await fetch(`${BASE_URL}/api/students/delete/${id}`, { // Assuming a delete endpoint like this
-    method: 'POST',
+    method: 'DELETE',
   });
 
   if (!response.ok) {
@@ -200,7 +205,7 @@ export const getCourseById = async (id: number): Promise<Course | undefined> => 
     return undefined;
   }
   return response.json();
-};
+}; 
 
 export const getCoursesForStudent = async (studentId: number): Promise<Course[]> => {
   await delay(100);

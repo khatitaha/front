@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getStudents, getUniversities } from '../../lib/api';
+import { addStudent, deleteStudent, getStudents, getUniversities, updateStudent } from '../../lib/api';
 import type { Student } from '../../lib/data';
 import StudentForm from '../../components/StudentForm';
 
@@ -34,7 +34,7 @@ const StudentsPage = () => {
 
   useEffect(() => {
     const filtered = allStudents.filter(student =>
-      student.name.toLowerCase().includes(searchTerm.toLowerCase())
+      student?.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setDisplayStudents(filtered);
   }, [searchTerm, allStudents]);
@@ -68,6 +68,7 @@ const StudentsPage = () => {
   const handleSaveStudent = async (student: Student) => {
     try {
       if (editingStudent) {
+        console.log('Updating student:', student);  
         const updatedStudent = await updateStudent(student);
         setAllStudents(allStudents.map(s => s.id === updatedStudent.id ? updatedStudent : s));
       } else {

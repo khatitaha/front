@@ -34,7 +34,8 @@ const Chatbot = () => {
       }
 
       const data = await response.json();
-      const botMessageText = data.summary || data.translated_text || 'Sorry, I could not process that.';
+      console.log('Response data:', data.result);
+      const botMessageText = data.result || data.result || 'Sorry, I could not process that.';
       const botMessage = { author: 'bot' as 'bot', text: botMessageText };
       setMessages(prev => [...prev, botMessage]);
 

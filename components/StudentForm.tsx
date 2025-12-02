@@ -12,6 +12,7 @@ interface StudentFormProps {
 
 const StudentForm = ({ student, onSave, onClose }: StudentFormProps) => {
   const [formData, setFormData] = useState({
+    id : student?.id ,
     name: '',
     address: '',
     university: {
@@ -28,6 +29,7 @@ const StudentForm = ({ student, onSave, onClose }: StudentFormProps) => {
         setUniversities(unis);
         if (student) {
           setFormData({
+             id : student?.id,
             name: student.name,
             address: student.address,
             university: { id: student.university.id, name: student.university.name }

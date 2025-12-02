@@ -24,10 +24,10 @@ const StudentDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
     const fetchData = async () => {
       try {
         const studentData = await getStudentById(studentId);
-        // console.error("Fetched student data:", studentData);
         if (studentData) {
+          console.log("Fetched student data:", studentData);
           setStudent(studentData);
-          const universityData = await getUniversityById(studentData.university.id);
+          const universityData = studentData.university;
           const coursesData = await getCoursesForStudent(studentData.id);
           setUniversity(universityData || null);
           setEnrolledCourses(coursesData);
