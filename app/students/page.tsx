@@ -9,7 +9,6 @@ import StudentForm from '../../components/StudentForm';
 const StudentsPage = () => {
   const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [displayStudents, setDisplayStudents] = useState<Student[]>([]);
-  const [universitiesMap, setUniversitiesMap] = useState<Map<number, string>>(new Map());
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,19 +20,9 @@ const StudentsPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [studentsData, universitiesData] = await Promise.all([
-          getStudents(),
-          getUniversities(),
-        ]);
-
+        const studentsData = await getStudents();
         setAllStudents(studentsData);
         setDisplayStudents(studentsData);
-        
-        const uniMap = new Map<number, string>();
-        for (const uni of universitiesData) {
-          uniMap.set(uni.id, uni.name);
-        }
-        setUniversitiesMap(uniMap);
       } catch (err) {
         setError('Failed to load data. Please make sure the API gateway is running and properly configured.');
       } finally {
@@ -60,10 +49,14 @@ const StudentsPage = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (studentId: number) => {
+  const handleDelete = async (studentId: number) => {
     if (confirm('Are you sure you want to delete this student?')) {
-      // Here you would typically call an API to delete the student
-      setAllStudents(allStudents.filter(s => s.id !== studentId));
+      try {
+        await deleteStudent(studentId);
+        setAllStudents(allStudents.filter(s => s.id !== studentId));
+      } catch (error) {
+        alert('Failed to delete student.');
+      }
     }
   };
 
@@ -72,16 +65,19 @@ const StudentsPage = () => {
     setEditingStudent(null);
   };
 
-  const handleSaveStudent = (student: Student) => {
-    // Here you would typically call an API to save the student
-    if (editingStudent) {
-      setAllStudents(allStudents.map(s => s.id === student.id ? student : s));
-    } else {
-      // For new students, you might need to assign a temporary ID or get one from the backend
-      const newStudent = { ...student, id: Date.now() };
-      setAllStudents([...allStudents, newStudent]);
+  const handleSaveStudent = async (student: Student) => {
+    try {
+      if (editingStudent) {
+        const updatedStudent = await updateStudent(student);
+        setAllStudents(allStudents.map(s => s.id === updatedStudent.id ? updatedStudent : s));
+      } else {
+        const newStudent = await addStudent(student);
+        setAllStudents([...allStudents, newStudent]);
+      }
+      handleCloseModal();
+    } catch (error) {
+      alert('Failed to save student.');
     }
-    handleCloseModal();
   };
 
   if (isLoading) {

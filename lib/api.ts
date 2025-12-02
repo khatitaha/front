@@ -5,8 +5,6 @@ import { studentCourses, courses as mockCourses } from './data';
 
 const BASE_URL = 'http://localhost:8086';
 
-let universities: University[] = [];
-
 // Simulate a delay to mimic network latency
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -27,21 +25,17 @@ export const getStudentById = async (id: number): Promise<Student | undefined> =
     // Return undefined or handle as per application's error handling strategy
     return undefined;
   }
-  const student = await response.json().then(data => {
-    console.log('Fetched student by ID:', data);
-    return data.student;
-  });
+  const student = await response.json();
+  console.log('Fetched student by ID:', student);
   return student;
-} ; 
+} ;
 
 
 export const addStudent = async (student: Omit<Student, 'id'>): Promise<Student> => {
   const studentDataForApi = {
     name: student.name,
     address: student.address,
-    university: {
-      id: student.university.id,
-    },
+    university_id: student.university.id,
   };
 
   const response = await fetch(`${BASE_URL}/api/students/add`, {
@@ -62,9 +56,7 @@ export const updateStudent = async (student: Student): Promise<Student> => {
   const studentDataForApi = {
     name: student.name,
     address: student.address,
-    university: {
-      id: student.university.id,
-    },
+    university_id: student.university.id,
   };
 
   const response = await fetch(`${BASE_URL}/api/students/update/${student.id}`, { // Assuming an update endpoint like this
@@ -83,7 +75,7 @@ export const updateStudent = async (student: Student): Promise<Student> => {
 
 export const deleteStudent = async (id: number): Promise<void> => {
   const response = await fetch(`${BASE_URL}/api/students/delete/${id}`, { // Assuming a delete endpoint like this
-    method: 'DELETE',
+    method: 'POST',
   });
 
   if (!response.ok) {
@@ -131,23 +123,62 @@ export const deleteCourse = async (id: number): Promise<void> => {
   }
 };
 
+export const addUniversity = async (university: Omit<University, 'id'>): Promise<University> => {
+  const response = await fetch(`${BASE_URL}/api/university/add`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(university),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to add university');
+  }
+  return response.json();
+};
+
+export const updateUniversity = async (university: University): Promise<University> => {
+  const response = await fetch(`${BASE_URL}/api/university/update/${university.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(university),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to update university');
+  }
+  return response.json();
+};
+
+export const deleteUniversity = async (id: number): Promise<void> => {
+  const response = await fetch(`${BASE_URL}/api/university/delete/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to delete university');
+  }
+};
+
 
 export const getUniversities = async (): Promise<University[]> => {
-  if (universities.length === 0) {
-    const response = await fetch(`${BASE_URL}/api/university/getAll`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch universities');
-    }
-    universities = await response.json();
+  const response = await fetch(`${BASE_URL}/api/university/getAll`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch universities');
   }
-  return universities;
+  return response.json();
 };
 
 export const getUniversityById = async (id: number): Promise<University | undefined> => {
-  if (universities.length === 0) {
-    await getUniversities();
+  const response = await fetch(`${BASE_URL}/api/university/get/${id}`);
+  const university = await response.json().then((data: any) => data.university);
+  if (!response.ok) {
+    return undefined;
   }
-  return universities.find(u => u.id === id);
+  return university;
 };
 
 export const getCourses = async (): Promise<Course[]> => {

@@ -21,7 +21,7 @@ const Chatbot = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${BASE_URL}/api/chatbot/${action}/`, {
+      const response = await fetch(`${BASE_URL}/ai/${action}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

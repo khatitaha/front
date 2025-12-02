@@ -6,10 +6,8 @@ import { getCourseById } from '../../../lib/api';
 import type { Course } from '../../../lib/data';
 import React from 'react';
 
-const CourseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
-    const { id } = React.use(params);
-
-  const courseId = parseInt(id, 10);
+const CourseDetailPage = ({ params }: { params: { id: string } }) => {
+  const courseId = parseInt(params.id, 10);
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
 
