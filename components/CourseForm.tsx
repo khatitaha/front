@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Course } from '../../lib/data';
+import type { Course } from '../lib/data';
+import { addCourse, updateCourse } from '../lib/api';
 
 interface CourseFormProps {
   course?: Course | null;
@@ -12,17 +13,19 @@ interface CourseFormProps {
 const CourseForm = ({ course, onSave, onClose }: CourseFormProps) => {
   const [formData, setFormData] = useState({
     name: '',
-    instructor: '',
     category: '',
+    description: '',
     schedule: '',
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (course) {
       setFormData({
         name: course.name,
-        instructor: course.instructor,
         category: course.category,
+        description: course.description,
         schedule: course.schedule,
       });
     }
@@ -33,13 +36,26 @@ const CourseForm = ({ course, onSave, onClose }: CourseFormProps) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const finalCourse: Course = {
-      id: course?.id || new Date().getTime(), // Mock new ID
-      ...formData,
-    };
-    onSave(finalCourse);
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      let savedCourse: Course;
+      if (course) {
+        // Editing existing course
+        savedCourse = await updateCourse({ ...formData, id: course.id });
+      } else {
+        // Adding new course
+        savedCourse = await addCourse(formData);
+      }
+      onSave(savedCourse); // Update parent state with the API's returned course
+    } catch (err: any) {
+      setError(err.message || 'Failed to save course.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -49,29 +65,32 @@ const CourseForm = ({ course, onSave, onClose }: CourseFormProps) => {
           <form onSubmit={handleSubmit}>
             <div className="modal-header">
               <h5 className="modal-title">{course ? 'Edit Course' : 'Add Course'}</h5>
-              <button type="button" className="btn-close" onClick={onClose}></button>
+              <button type="button" className="btn-close" onClick={onClose} disabled={isLoading}></button>
             </div>
             <div className="modal-body">
+              {error && <div className="alert alert-danger">{error}</div>}
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">Course Name</label>
-                <input type="text" className="form-control" id="name" name="name" value={formData.name} onChange={handleChange} required />
+                <input type="text" className="form-control" id="name" name="name" value={formData.name} onChange={handleChange} required disabled={isLoading} />
               </div>
               <div className="mb-3">
-                <label htmlFor="instructor" className="form-label">Instructor</label>
-                <input type="text" className="form-control" id="instructor" name="instructor" value={formData.instructor} onChange={handleChange} required />
+                <label htmlFor="description" className="form-label">Description</label>
+                <input type="text" className="form-control" id="description" name="description" value={formData.description} onChange={handleChange} required disabled={isLoading} />
               </div>
               <div className="mb-3">
                 <label htmlFor="category" className="form-label">Category</label>
-                <input type="text" className="form-control" id="category" name="category" value={formData.category} onChange={handleChange} required />
+                <input type="text" className="form-control" id="category" name="category" value={formData.category} onChange={handleChange} required disabled={isLoading} />
               </div>
               <div className="mb-3">
                 <label htmlFor="schedule" className="form-label">Schedule</label>
-                <input type="text" className="form-control" id="schedule" name="schedule" value={formData.schedule} onChange={handleChange} required />
+                <input type="text" className="form-control" id="schedule" name="schedule" value={formData.schedule} onChange={handleChange} required disabled={isLoading} />
               </div>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={onClose}>Close</button>
-              <button type="submit" className="btn btn-primary">Save Changes</button>
+              <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isLoading}>Close</button>
+              <button type="submit" className="btn btn-primary" disabled={isLoading}>
+                {isLoading ? 'Saving...' : 'Save Changes'}
+              </button>
             </div>
           </form>
         </div>

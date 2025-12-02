@@ -1,26 +1,49 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { courses as initialCourses } from '../../lib/data';
+import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+import { getCourses, deleteCourse } from '../../lib/api';
 import type { Course } from '../../lib/data';
 import CourseForm from '../../components/CourseForm';
 
 const CoursesPage = () => {
-  const [allCourses, setAllCourses] = useState<Course[]>(initialCourses);
-  const [displayCourses, setDisplayCourses] = useState<Course[]>(initialCourses);
+  const [allCourses, setAllCourses] = useState<Course[]>([]);
+  const [displayCourses, setDisplayCourses] = useState<Course[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // State for modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
 
-  useEffect(() => {
-    const filteredCourses = allCourses.filter(course =>
-      course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      course.instructor.toLowerCase().includes(searchTerm.toLowerCase())
+  const filterCourses = useCallback((courses: Course[], term: string) => {
+    return courses.filter(course =>
+      course.name.toLowerCase().includes(term.toLowerCase()) ||
+      course.description.toLowerCase().includes(term.toLowerCase())
     );
-    setDisplayCourses(filteredCourses);
-  }, [searchTerm, allCourses]);
+  }, []);
+
+  const refreshCourses = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const coursesData = await getCourses();
+      setAllCourses(coursesData);
+    } catch (err) {
+      setError('Failed to load courses. Please make sure the API gateway is running and properly configured.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshCourses();
+  }, [refreshCourses]);
+
+  useEffect(() => {
+    setDisplayCourses(filterCourses(allCourses, searchTerm));
+  }, [searchTerm, allCourses, filterCourses]);
 
   const handleAdd = () => {
     setEditingCourse(null);
@@ -32,9 +55,14 @@ const CoursesPage = () => {
     setIsModalOpen(true);
   };
   
-  const handleDelete = (courseId: number) => {
+  const handleDelete = async (courseId: number) => {
     if (confirm('Are you sure you want to delete this course?')) {
-      setAllCourses(allCourses.filter(c => c.id !== courseId));
+      try {
+        await deleteCourse(courseId);
+        setAllCourses(prev => prev.filter(c => c.id !== courseId)); // Optimistic update
+      } catch (err) {
+        setError('Failed to delete course.');
+      }
     }
   };
 
@@ -51,6 +79,14 @@ const CoursesPage = () => {
     }
     handleCloseModal();
   };
+
+  if (isLoading) {
+    return <div>Loading courses...</div>;
+  }
+  
+  if (error) {
+    return <div className="alert alert-danger">{error}</div>;
+  }
 
   return (
     <div>
@@ -81,7 +117,7 @@ const CoursesPage = () => {
         <thead className="table-dark">
           <tr>
             <th>Course Name</th>
-            <th>Instructor</th>
+            <th>Description</th>
             <th>Category</th>
             <th>Schedule</th>
             <th>Actions</th>
@@ -91,10 +127,11 @@ const CoursesPage = () => {
           {displayCourses.map((course) => (
             <tr key={course.id}>
               <td>{course.name}</td>
-              <td>{course.instructor}</td>
+              <td>{course.description}</td>
               <td>{course.category}</td>
               <td>{course.schedule}</td>
               <td>
+                <Link href={`/courses/${course.id}`} className="btn btn-sm btn-outline-info me-2">View</Link>
                 <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => handleEdit(course)}>Edit</button>
                 <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(course.id)}>Delete</button>
               </td>

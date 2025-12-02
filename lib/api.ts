@@ -1,7 +1,5 @@
 "use server";
 
-
-
 import type { Student, Course, University } from './data';
 import { studentCourses, courses as mockCourses } from './data';
 
@@ -32,9 +30,106 @@ export const getStudentById = async (id: number): Promise<Student | undefined> =
   return response.json();
 };
 
+export const addStudent = async (student: Omit<Student, 'id'>): Promise<Student> => {
+  const studentDataForApi = {
+    name: student.name,
+    address: student.address,
+    university: {
+      id: student.university.id,
+    },
+  };
+
+  const response = await fetch(`${BASE_URL}/api/students/add`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(studentDataForApi),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to add student');
+  }
+  return response.json();
+};
+
+export const updateStudent = async (student: Student): Promise<Student> => {
+  const studentDataForApi = {
+    name: student.name,
+    address: student.address,
+    university: {
+      id: student.university.id,
+    },
+  };
+
+  const response = await fetch(`${BASE_URL}/api/students/update/${student.id}`, { // Assuming an update endpoint like this
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(studentDataForApi),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to update student');
+  }
+  return response.json();
+};
+
+export const deleteStudent = async (id: number): Promise<void> => {
+  const response = await fetch(`${BASE_URL}/api/students/delete/${id}`, { // Assuming a delete endpoint like this
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to delete student');
+  }
+};
+
+export const addCourse = async (course: Omit<Course, 'id'>): Promise<Course> => {
+  const response = await fetch(`${BASE_URL}/api/courses/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(course),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to add course');
+  }
+  return response.json();
+};
+
+export const updateCourse = async (course: Course): Promise<Course> => {
+  const response = await fetch(`${BASE_URL}/api/courses/${course.id}/`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(course),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to update course');
+  }
+  return response.json();
+};
+
+export const deleteCourse = async (id: number): Promise<void> => {
+  const response = await fetch(`${BASE_URL}/api/courses/${id}/`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to delete course');
+  }
+};
+
+
 export const getUniversities = async (): Promise<University[]> => {
   if (universities.length === 0) {
-    const response = await fetch(`${BASE_URL}/api/universities/getAll`);
+    const response = await fetch(`${BASE_URL}/api/university/getAll`);
     if (!response.ok) {
       throw new Error('Failed to fetch universities');
     }
@@ -58,6 +153,19 @@ export const getCourses = async (): Promise<Course[]> => {
   return response.json();
 };
 
+export const getCourseById = async (id: number): Promise<Course | undefined> => {
+      console.log('trying to fecth course by id:', id);
+
+  const response = await fetch(`${BASE_URL}/api/courses/${id}/`);
+    // const response = await fetch(`http://localhost:8086/api/courses/1/`);
+    console.log('Response for course id fetch:', response);
+
+  if (!response.ok) {
+    return undefined;
+  }
+  return response.json();
+};
+
 export const getCoursesForStudent = async (studentId: number): Promise<Course[]> => {
   await delay(100);
   const courseIds = studentCourses
@@ -66,38 +174,3 @@ export const getCoursesForStudent = async (studentId: number): Promise<Course[]>
   
   return mockCourses.filter(course => courseIds.includes(course.id));
 };
-
-
-
-export const addStudent = async (student: Omit<Student, 'id'>): Promise<Student> => {
-  const response = await fetch(`${BASE_URL}/api/students/add`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(student),
-  });
-  if (!response.ok) {
-    throw new Error('Failed to add student');
-  }
-  return response.json();
-}
-
-export const updateStudent = async (student: Student): Promise<Student> => {
-  const response = await fetch(`${BASE_URL}/api/students/update/${student.id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(student),
-  });
-  if (!response.ok) {
-    throw new Error('Failed to update student');
-  }
-  return response.json();
-}
-
-export const deleteStudent = async (studentId: number): Promise<void> => {
-  const response = await fetch(`${BASE_URL}/api/students/delete/${studentId}`, {
-    method: 'DELETE',
-  });
-  if (!response.ok) {
-    throw new Error('Failed to delete student');
-  }
-}

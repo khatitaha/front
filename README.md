@@ -2,7 +2,13 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, you need to run the backend server. For that you need to open a new terminal and go to the `workingIdlProjects` folder and then go to the `backend` folder and run the following command:
+
+```bash
+go run .
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev

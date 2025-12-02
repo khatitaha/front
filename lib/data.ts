@@ -14,7 +14,7 @@ export interface Student {
 export interface Course {
   id: number;
   name: string;
-  instructor: string;
+  description: string;
   category: string;
   schedule: string;
 }
@@ -39,10 +39,11 @@ export const students: Student[] = [
 ];
 
 export const courses: Course[] = [
-  { id: 201, name: "Software Development Engineering", instructor: "Dr. Ahmed Khemis", category: "Computer Science", schedule: "Mon, Wed 10:00-11:30" },
-  { id: 202, name: "Data Science Fundamentals", instructor: "Prof. Leila Nasri", category: "Data Science", schedule: "Tue, Thu 13:00-14:30" },
-  { id: 203, name: "Intelligent Systems", instructor: "Dr. Yacine Haddad", category: "AI", schedule: "Mon, Wed 14:00-15:30" },
-  { id: 204, name: "Microservices Architecture", instructor: "Dr. Ahmed Khemis", category: "Software Architecture", schedule: "Fri 09:00-12:00" },
+  { id: 201, name: "Software Development Engineering", description: "Dr. Ahmed Khemis", category: "Computer Science", schedule: "Mon, Wed 10:00-11:30" },
+  { id: 202, name: "Data Science Fundamentals", description: "Prof. Leila Nasri", category: "Data Science", schedule: "Tue, Thu 13:00-14:30" },
+  { id: 203, name: "Intelligent Systems", description: "Dr. Yacine Haddad", category: "AI", schedule: "Mon, Wed 14:00-15:30" },
+  { id: 204, name: "Microservices Architecture", description: "Dr. Ahmed Khemis", category: "Software Architecture", schedule: "Fri 09:00-12:00" },
+  { id: 205, name: "Cyber Security", description: "Dr. Yacine Haddad", category: "Security", schedule: "Sat 09:00-12:00" },
 ];
 
 export const studentCourses: StudentCourse[] = [
