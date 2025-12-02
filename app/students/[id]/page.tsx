@@ -4,9 +4,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getStudentById, getCoursesForStudent, getUniversityById } from '../../../lib/api';
 import type { Student, Course, University } from '../../../lib/data';
+import React from 'react';
 
-const StudentDetailPage = ({ params }: { params: { id: string } }) => {
-  const studentId = parseInt(params.id, 10);
+const StudentDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
+      const { id } = React.use(params);
+  
+  const studentId = parseInt(id, 10);
   const [student, setStudent] = useState<Student | null>(null);
   const [university, setUniversity] = useState<University | null>(null);
   const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
@@ -21,9 +24,10 @@ const StudentDetailPage = ({ params }: { params: { id: string } }) => {
     const fetchData = async () => {
       try {
         const studentData = await getStudentById(studentId);
+        // console.error("Fetched student data:", studentData);
         if (studentData) {
           setStudent(studentData);
-          const universityData = await getUniversityById(studentData.university_id);
+          const universityData = await getUniversityById(studentData.university.id);
           const coursesData = await getCoursesForStudent(studentData.id);
           setUniversity(universityData || null);
           setEnrolledCourses(coursesData);
@@ -78,9 +82,9 @@ const StudentDetailPage = ({ params }: { params: { id: string } }) => {
             <li key={course.id} className="list-group-item d-flex justify-content-between align-items-center">
               <div>
                 <h6 className="mb-1">{course.name}</h6>
-                <small className="text-muted">{course.instructor} - {course.category}</small>
+                <small className="text-muted">{course.description} - {course.category}</small>
               </div>
-              <span className="badge bg-primary rounded-pill">{course.schedule}</span>
+              <span className="badge bg-primary r ounded-pill">{course.schedule}</span>
             </li>
           ))}
         </ul>

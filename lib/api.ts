@@ -22,13 +22,18 @@ export const getStudents = async (): Promise<Student[]> => {
 };
 
 export const getStudentById = async (id: number): Promise<Student | undefined> => {
-  const response = await fetch(`${BASE_URL}/api/students/${id}`);
+  const response = await fetch(`${BASE_URL}/api/students/get/${id}`);
   if (!response.ok) {
     // Return undefined or handle as per application's error handling strategy
     return undefined;
   }
-  return response.json();
-};
+  const student = await response.json().then(data => {
+    console.log('Fetched student by ID:', data);
+    return data.student;
+  });
+  return student;
+} ; 
+
 
 export const addStudent = async (student: Omit<Student, 'id'>): Promise<Student> => {
   const studentDataForApi = {
